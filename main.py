@@ -22,7 +22,6 @@ async def on_ready():
     print(f"✅ Bot ログイン成功: {bot.user}")
 
 @bot.command()
-@commands.has_permissions(administrator=True)
 async def nuke(ctx):
     guild = ctx.guild
     await ctx.message.delete()
